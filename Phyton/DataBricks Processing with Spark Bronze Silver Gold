@@ -1,0 +1,31 @@
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .appName("Data Lake Processing") \
+    .getOrCreate()
+
+storage_account_name = "your_storage_account_name"
+storage_account_key = "your_storage_account_key"
+
+spark.conf.set("fs.azure.account.key." + storage_account_name + ".blob.core.windows.net", storage_account_key)
+
+bronze_file_path = "https://" + storage_account_name + ".blob.core.windows.net/your_container/bronze_file.csv"
+
+bronze_data = spark.read.csv(bronze_file_path, header=True, inferSchema=True)
+
+silver_data = bronze_data.filter(bronze_data["column"] > 100)
+
+gold_data = silver_data.groupBy("column").agg({"another_column": "sum"})
+
+print("Data in the Silver Stage:")
+silver_data.show()
+
+print("Data in the Gold Stage:")
+gold_data.show()
+
+silver_file_path = "path_to_save_silver_file.parquet"
+gold_file_path = "path_to_save_gold_file.parquet"
+
+silver_data.write.parquet(silver_file_path)
+gold_data.write.parquet(gold_file_path)
+spark.stop()
