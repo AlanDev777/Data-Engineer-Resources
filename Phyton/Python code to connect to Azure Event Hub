@@ -1,0 +1,32 @@
+from azure.eventhub import EventHubConsumerClient
+
+# Connection details for the Event Hub
+conn_str = "CONNECTION_STRING"
+eventhub_name = "EVENTHUB_NAME"
+consumer_group = "$Default"
+
+# Function to process received events
+def on_event(partition_context, event):
+    print("Received event from partition: {}".format(partition_context.partition_id))
+    print("Event data: {}".format(event.body_as_str(encoding='UTF-8')))
+    print("Event properties: {}".format(event.properties))
+    print("System properties: {}".format(event.system_properties))
+    print("----------")
+
+# Configuration for the consumer client to receive events
+consumer_client = EventHubConsumerClient.from_connection_string(
+    conn_str=conn_str,
+    consumer_group=consumer_group,
+    eventhub_name=eventhub_name
+)
+
+try:
+    # Start receiving events
+    with consumer_client:
+        consumer_client.receive(
+            on_event=on_event,
+            starting_position="-1"  # Start from the last unprocessed event
+        )
+
+except KeyboardInterrupt:
+    print("Event receiving stopped by the user.")
