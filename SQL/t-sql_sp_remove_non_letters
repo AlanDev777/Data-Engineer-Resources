@@ -1,0 +1,20 @@
+CREATE PROCEDURE sp_RemoveNonLetters
+   @InputString NVARCHAR(MAX),
+   @OutputString NVARCHAR(MAX) OUTPUT
+AS
+BEGIN
+   SET NOCOUNT ON;
+
+   DECLARE @Pattern NVARCHAR(50) = N'%[^A-Za-z]%';
+
+   SELECT @OutputString = LOWER(
+      REPLACE(
+         REPLACE(
+            REPLACE(
+               REPLACE(
+                  REPLACE(@InputString, ' ', ''), 
+               '.', ''), 
+            ',', ''), 
+         '-', ''), 
+      @Pattern, N'')) 
+END
